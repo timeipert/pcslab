@@ -32,7 +32,7 @@ npm install
 ```sh
 ng serve
 ```
-Then go to localhost:4200.
+Then go to https://localhost:4200.
 
 ## Run tests
 
