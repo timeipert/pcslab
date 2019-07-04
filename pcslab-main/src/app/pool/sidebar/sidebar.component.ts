@@ -1,6 +1,6 @@
 import {Component} from '@angular/core';
 import {IPool} from "../../interfaces/pool";
-import {PoolService} from "../../services/pool.service";
+import {PoolService} from "../../services/pool/pool.service";
 
 @Component({
   selector: 'app-sidebar',

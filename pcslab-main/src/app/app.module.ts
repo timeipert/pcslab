@@ -24,6 +24,7 @@ import {PoolModule} from "./pool/pool.module";
 import {SharedModule} from "./shared/shared.module";
 import {ScoreModule} from "./score/score.module";
 import {FileModule} from "./file/file.module";
+import { NoteDragDirective } from './directives/note-drag.directive';
 
 @NgModule({
   declarations: [

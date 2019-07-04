@@ -29,14 +29,14 @@
         </div>
       </form>
 
-      <div class="d-flex p-2">
+      <div class="d-flex p-2" *ngIf="sets">
         <div class="card-columns">
           <app-pcset-card *ngFor="let pcset of sets; let id = index" [pcset]="pcset.set" [color]="pcset.color" class="card"
                             (delete)="onDelete(id)"></app-pcset-card>
 
       </div>
     </div>
-      <div *ngIf="!sets.length">
+      <div *ngIf="!sets || !sets.length">
         <div class="jumbotron jumbotron-fluid">
           <div class="container">
             <h1 class="display-4">

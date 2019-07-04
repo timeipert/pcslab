@@ -1,20 +1,25 @@
-import { NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { ViewerComponent } from './viewer/viewer.component';
+import {NgModule} from '@angular/core';
+import {CommonModule} from '@angular/common';
+import {ViewerComponent} from './viewer/viewer.component';
 import {FontAwesomeModule} from "@fortawesome/angular-fontawesome";
 import {SharedModule} from "../shared/shared.module";
 import {AppRoutingModule} from "../app-routing.module";
+import {NoteDragDirective} from "../directives/note-drag.directive";
 
 @NgModule({
-  declarations: [ViewerComponent],
+  declarations: [
+    ViewerComponent,
+    NoteDragDirective
+  ],
   imports: [
     CommonModule,
     FontAwesomeModule,
     SharedModule,
     AppRoutingModule
   ],
-  exports : [
+  exports: [
     ViewerComponent
   ]
 })
-export class ScoreModule { }
+export class ScoreModule {
+}

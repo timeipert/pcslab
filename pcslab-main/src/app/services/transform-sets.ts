@@ -1,48 +1,17 @@
-import { Injectable } from '@angular/core';
-import {StorageService} from "./storage.service";
-import {PoolService} from "./pool.service";
-import {filter, switchMap} from "rxjs/operators";
+import {Injectable} from '@angular/core';
 import {IPitchClassSet, pitchClassSetFromArray, p, pitchClassFrom} from "pitchclassjs/dist/index";
 import {PitchClass} from "pitchclassjs/dist/PitchClass/pitch";
-import {IPool} from "../interfaces/pool";
 import {INoteElement} from "../interfaces/noteElement";
 
 @Injectable({
   providedIn: 'root'
 })
-export class PcsetService {
+export class TransformSetsService {
 
-  inputError: IPCSInputError = {errorMessage: '', error: false};
-  sets: any;
-  activePool;
-  sets$;
 
-  constructor(private storage: StorageService, private poolService: PoolService) {
+  constructor() {
 
-    this.poolService.getActivePool().pipe(
-      filter(activePool => !!activePool),
-      switchMap((activePool: IPool) => {
-        this.sets$ = this.storage.select(
-          `sets-overview-${activePool.id}`,
-          []
-        );
-        return this.sets$;
-      }
-      )).subscribe(storedSets => this.sets = storedSets);
   }
-/**
-    this.poolService.getActivePool().subscribe((activePool) => {
-      this.activePool = activePool;
-      if (this.activePool.id !== '') {
-        this.storeKey = 'sets-overview-' + this.activePool.id;
-        this.sets$ = this.storage.select(this.storeKey, []);
-        this.sets$.subscribe((storedSets) => {
-          this.sets = storedSets;
-        });
-      }
-    });
-  }
- */
 
   randomColor() {
     let length = 6;
@@ -82,30 +51,6 @@ export class PcsetService {
   }
 
 
-  storeSet(storeKey, set, id, virtual) {
-    const sets = [...this.sets];
-    if (!virtual) {
-      sets.push({id, set: set as IPitchClassSet, color: this.randomColor()});
-      this.storage.set(storeKey, sets);
-    } else {
-      this.storage.set(storeKey, [{id, set: set as IPitchClassSet, color: this.randomColor()}]);
-    }
-    return sets;
-  }
-
-  addPCS(input: any, storeKey: string, id: any = -1, alreadyPitchClass: boolean = false, virtual: boolean = false) {
-    if (alreadyPitchClass) {
-      input = input.map((e) => e.class).join(',');
-    }
-    const parserOutput = this.parseSet(input, this.sets);
-    if (parserOutput.hasOwnProperty('error')) {
-      return parserOutput as IPCSInputError;
-    } else {
-      console.log("addPCS: %s, %o, %s, %s", storeKey, parserOutput, id, virtual);
-      return this.storeSet(storeKey, parserOutput, id, virtual);
-    }
-  }
-
   getIDSet(noteElementList: INoteElement[]) {
     const noteIDs = noteElementList.map(e => e.id);
     const pitchClassList = noteElementList.map((el) => {
@@ -115,11 +60,11 @@ export class PcsetService {
         duration: 0,
         accidentals: el.accid as any
       });
-    });
+    }).map((pc) => pc.class)
+      .filter((pitchClass, index, arr) => arr.indexOf(pitchClass) !== index ? false : true)
+      .map((pc) => p(pc));
+
     return {noteIDs, pitchClassList}
   }
 
-  getSets() {
-    return this.sets$;
-  }
 }

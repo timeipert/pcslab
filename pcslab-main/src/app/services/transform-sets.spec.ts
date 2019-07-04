@@ -1,12 +1,12 @@
 import { TestBed } from '@angular/core/testing';
 
-import { PcsetService } from './pcset.service';
+import { TransformSets } from './transform-sets';
 
-describe('PcsetService', () => {
+describe('TransformSets', () => {
   beforeEach(() => TestBed.configureTestingModule({}));
 
   it('should be created', () => {
-    const service: PcsetService = TestBed.get(PcsetService);
+    const service: TransformSets = TestBed.get(TransformSets);
     expect(service).toBeTruthy();
   });
 });

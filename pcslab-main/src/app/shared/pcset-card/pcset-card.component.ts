@@ -1,4 +1,4 @@
-import {Component, EventEmitter, Input, OnInit, Output, ViewChild} from '@angular/core';
+import {AfterViewInit, Component, EventEmitter, Input, OnInit, Output, ViewChild} from '@angular/core';
 import {
   findPrimeForm,
   IIntervalClassVector,
@@ -7,15 +7,16 @@ import {
   IPitchClassSet,
   p
 } from "pitchclassjs/dist/index";
+import {ColorService} from "../../services/color.service";
 
 @Component({
   selector: 'app-pcset-card',
   templateUrl: './pcset-card.component.html',
   styleUrls: ['./pcset-card.component.sass']
 })
-export class PcsetCardComponent implements OnInit {
+export class PcsetCardComponent implements OnInit, AfterViewInit {
   @Input() pcset: IPitchClassSet = {pcs: [], normalForm: []};
-  @Input() color = '#fff';
+  @Input('color') backgroundColor = '#ffffff';
   @ViewChild('cardheader', {static: false}) cardheader;
   @Output() delete = new EventEmitter<boolean>();
 
@@ -23,13 +24,17 @@ export class PcsetCardComponent implements OnInit {
   icv: IIntervalClassVector = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0}
   icvValues = '';
   icvAsPC = [];
+  textcolor = ''
 
-  constructor() {
+  constructor(private colorService: ColorService) {
   }
 
+
+
   ngAfterViewInit() {
-    this.cardheader.nativeElement.setAttribute('style', 'background-color: ' + this.color +
-      ' !important;');
+    this.textcolor = this.colorService.isBright(this.backgroundColor) ? '#000' : '#fff';
+    this.cardheader.nativeElement.setAttribute('style',
+      `background: ${this.backgroundColor} !important; color: ${this.textcolor} !important;`);
   }
 
   findEverything() {

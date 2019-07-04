@@ -1,9 +1,10 @@
 import {Component, HostBinding, OnInit} from '@angular/core';
 import {IPool} from "../../interfaces/pool";
 import {StorageService} from "../../services/storage.service";
-import {PoolService} from "../../services/pool.service";
-import {PcsetService} from "../../services/pcset.service";
+import {PoolService} from "../../services/pool/pool.service";
+import { TransformSetsService} from "../../services/transform-sets";
 import {filter, map, switchMap, tap} from "rxjs/operators";
+import {StoreSetsService} from "../../services/store-sets.service";
 
 @Component({
   selector: 'app-overview',
@@ -20,33 +21,26 @@ export class OverviewComponent {
   storeKey;
   inputError = {error: '', errorMessage: ''};
 
-  constructor(private storage: StorageService, private poolService: PoolService, private setsService: PcsetService) {
+  constructor(private storage: StorageService, private poolService: PoolService) {
     this.poolService.getActivePool().pipe(
       filter(activePool => !!activePool),
       tap(activePool => this.activePool = activePool),
       tap(_ => this.storeKey = this.poolService.getStoreKey(false)),
-      switchMap(_ => this.setsService.getSets())
-    ).subscribe(storedSets => this.sets = storedSets);
-
-    /*this.poolService.getActivePool().subscribe((activePool) => {
-      this.activePool = activePool;
-      this.storeKey = 'sets-overview-' + activePool.id;
-      if (this.activePool.id !== '') {
-        this.setsService.getSets().subscribe((storedSets) => {
-          this.sets = storedSets;
-        });
-      }
-    });*/
+      switchMap(_ => this.poolService.getSetsOfActivePool())
+    ).subscribe(storedSets => {
+      console.log("New Sets arrived 31 overview", storedSets)
+      this.sets = storedSets
+    });
   }
 
 
   addPCS(input) {
-    const out: any = this.setsService.addPCS(input, this.storeKey, this.sets);
+    const out: any = this.poolService.addManualInputToPool(false, input);
     if (out && out.hasOwnProperty('error')) {
       throw(out);
       this.inputError = out;
     } else {
-      this.sets = out;
+      //this.sets = out;
       this.virtualSet = '';
     }
   }

@@ -1,18 +1,11 @@
 import {AfterViewInit, Component, HostBinding} from '@angular/core';
-import {PoolService} from "../../services/pool.service";
+import {PoolService} from "../../services/pool/pool.service";
 import {StorageService} from "../../services/storage.service";
-import {PcsetService} from "../../services/pcset.service";
-import {FileService} from "../../services/viewer/file.service";
-import {INote} from "pitchclassjs/dist/PitchClass/pitch";
+import {FileService} from "../../services/files/file.service";
 import {VerovioService} from "../../services/viewer/verovio.service";
-import {tap} from "rxjs/operators";
-import {NoteSelectService} from "../../services/viewer/note-select.service";
 import {INoteElement} from "../../interfaces/noteElement";
-import {
-  fillSingleNoteActiveByThis,
-  fillSingleNoteStandardByThis
-} from "./jqueryDomManipulation";
-
+import {setRenderedScore} from "./jqueryDomManipulation";
+// TODO: Duplicate File strategy!
 declare const $: any;
 
 @Component({
@@ -20,7 +13,7 @@ declare const $: any;
   templateUrl: './viewer.component.html',
   styleUrls: ['./viewer.component.sass']
 })
-export class ViewerComponent implements AfterViewInit{
+export class ViewerComponent implements AfterViewInit {
 
   @HostBinding('attr.class') hostClass = 'app-body';
   svg;
@@ -35,6 +28,7 @@ export class ViewerComponent implements AfterViewInit{
   activeFile = {id: ''};
   elementListAsSet = null;
 
+
   x1 = 0;
   y1 = 0;
   x2 = 0;
@@ -43,19 +37,18 @@ export class ViewerComponent implements AfterViewInit{
   vy = 0;
   dragActive = false;
   noteCoordinates = [];
+
   constructor(
-    private verovioService: VerovioService,
     private poolService: PoolService,
+    private verovioService: VerovioService,
     private storage: StorageService,
-    private setsService: PcsetService,
-    private files: FileService,
-    private noteSelectService: NoteSelectService
+    private files: FileService
   ) {
-    /*this.getActivePool();
+    this.getActivePool();
     this.getFileList();
     this.getActiveFile();
     this.getSelectedNoteElements();
-    this.getVirtualSet();*/
+    this.getVirtualSet();
   }
 
 
@@ -67,19 +60,19 @@ export class ViewerComponent implements AfterViewInit{
     this.files.getFiles().subscribe((list) => this.filesList = list);
   }
 
-  getActiveFile()  {
+  getActiveFile() {
     this.files.getActiveFile().subscribe((file) => this.activeFile = file);
   }
 
   getSelectedNoteElements() {
     this.storage.select('notes-selected-elements', [])
       .pipe(
-        tap(elementList => this.noteSelectService.resetVirtualPcset(elementList))
+        //tap(elementList => this.noteSelectService.resetVirtualPcset(elementList))
       ).subscribe(el => this.elementList = el);
   }
 
   getVirtualSet() {
-    this.storage.select('sets-overview-virtual', []).subscribe((set) => this.elementListAsSet = set[0].set);
+    this.storage.select('sets-overview-virtual', [{set: []}]).subscribe((set) => this.elementListAsSet = set[0].set);
   }
 
   clearNotes() {
@@ -102,12 +95,7 @@ export class ViewerComponent implements AfterViewInit{
   }
 
   addToPoolSet(virtual = false) {
-    const storeKey = this.poolService.getStoreKey(virtual);
-    const {noteIDs, pitchClassList} = this.setsService.getIDSet(this.elementList);
-    const out = this.setsService.addPCS(pitchClassList, storeKey, noteIDs, true, virtual);
-    if (out && out.hasOwnProperty('error')) {
-      this.inputError = out as IPCSInputError;
-    }
+    this.poolService.addNoteSelectionToPool(virtual, this.elementList);
   }
 
   paging(forward) {
@@ -119,37 +107,12 @@ export class ViewerComponent implements AfterViewInit{
   loadSVG() {
     const ngThis = this;
     // Sorry that I'm using jquery... I don't see a way how to bind events to angular innerhtml in the proper way...
-    this.verovioService.initSvgOnLoad(this.svg, this, this.elementList);
+    setRenderedScore(this.svg);
+    this.verovioService.initSvgOnLoad(this.elementList);
     $('.note').click(function (e) {
-      ngThis.noteClick(e, this, ngThis);
+      ngThis.verovioService.noteClick(e, this, ngThis.elementList);
     });
   }
-
-  isClickedNoteInNoteElementList(ngThis, event) {
-    return ngThis.elementList.reduce((state, element) => element.id === event.currentTarget.id ? true : state, false)
-  }
-
-  filterClickedNoteFromNoteElementList(ngThis, event) {
-    ngThis.elementList = ngThis.elementList.filter((d) => d.id !== event.currentTarget.id);
-  }
-
-  addClickedNoteToNoteElementList(ngThis, event) {
-    const note: INote = ngThis.verovioService.getNote(event.currentTarget.id);
-    ngThis.elementList.push(note);
-  }
-
-  noteClick(event, $this, ngThis) {
-    if (this.isClickedNoteInNoteElementList(ngThis, event)) {
-      this.filterClickedNoteFromNoteElementList(ngThis, event);
-      fillSingleNoteStandardByThis($this);
-    } else {
-      this.addClickedNoteToNoteElementList(ngThis, event);
-      fillSingleNoteActiveByThis($this);
-    }
-    this.addToPoolSet(true);
-    this.storage.set('notes-selected-elements', ngThis.elementList);
-  }
-
 
 
   loadPage() {
@@ -163,22 +126,10 @@ export class ViewerComponent implements AfterViewInit{
 
   }
 
-  selectAllInCoordinates() {
-    console.log('select');
 
-    this.noteCoordinates.forEach((note) => {
-
-      console.log(this.x1, this.y1, this.x2, this.y2, note.offset.top, note.offset.left, note.id);
-      if (note.offset.left > this.x1 &&
-        note.offset.left < this.x2 &&
-        note.offset.top > this.y1 &&
-        note.offset.top < this.y2) {
-        this.noteClick({currentTarget: {id: note.id}}, '#' + note.id, this);
-      }
-    });
-  }
-
-  activateDragSelect() {
+  /**
+   //TODO: Improve Drag select...
+   activateDragSelect() {
 
     const ngThis = this;
     $('#musicwrap').mousedown(function (e) {
@@ -212,11 +163,11 @@ export class ViewerComponent implements AfterViewInit{
       ngThis.selectAllInCoordinates();
     })
 
-  }
+  }*/
 
 
   ngAfterViewInit() {
-    //this.loadPage();
+    this.loadPage();
     //this.activateDragSelect();
   }
 

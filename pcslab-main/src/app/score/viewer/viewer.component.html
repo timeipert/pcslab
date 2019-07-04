@@ -1,7 +1,4 @@
-<div class="dragger" *ngIf="dragActive" [style.width.px]="vx-x1" [style.height.px]="vy-y1"
-     [style.top.px]="y1" [style.left.px]="x1">
 
-</div>
 <main class="w-100 main ">
   <nav class="navbar navbar-light" style="background-color: #ffffff;">
     <h1>viewer</h1>
@@ -30,13 +27,14 @@
   <div class="loader" *ngIf="loading">
     <div class="spinner"></div>
   </div>
-  <div id="musicwrap">
-
+  <div id="musicwrap" appNoteDrag [elementList]="elementList">
+    <div class="dragger"></div>
     <div id="music" style="width: 100%; height: 700px;"></div>
-    <!-- [innerHTML]="svg | safe: 'html'"-->
 
   </div>
 </main>
+
+
 
 <aside class=" aside-menu-xl">
   <ul class="nav nav-tabs" role="tablist">

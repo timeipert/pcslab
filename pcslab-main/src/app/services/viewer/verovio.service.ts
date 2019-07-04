@@ -2,14 +2,17 @@ import {Injectable} from '@angular/core';
 import {WebWorkerService} from 'ngx-web-worker';
 import {parseXML} from "../../shared/domparser";
 import {StorageService} from "../storage.service";
-import {FileService} from "./file.service";
+import {FileService} from "../files/file.service";
 import {parseMEI} from "../../webworker/parseMEI";
 import {
-  fillSingleNoteActiveById,
+  fillSingleNoteActiveById, fillSingleNoteActiveByThis,
   fillSingleNoteStandardByThis,
   setCursorPointerForEveryNote
 } from "../../score/viewer/jqueryDomManipulation";
-import {switchMap} from "rxjs/operators";
+import {switchMap, tap} from "rxjs/operators";
+import {INote} from "pitchclassjs/dist/PitchClass/pitch";
+import {PoolService} from "../pool/pool.service";
+import {CoordinatesService} from "./coordinates.service";
 
 declare const verovio: any;
 declare const $: any;
@@ -31,10 +34,13 @@ export class VerovioService {
 
   page = 1;
 
-  constructor(private webWorkerService: WebWorkerService, private storage: StorageService, private fileService: FileService) {
+  constructor(private webWorkerService: WebWorkerService, private storage: StorageService, private fileService: FileService,
+              private poolService: PoolService,
+              private coordinatesService: CoordinatesService) {
     this.fileService.getActiveFile().pipe(
       switchMap(file => this.fileService.getFileContent(file))
     ).subscribe((fileContent) => this.fileContent = fileContent);
+
     this.vrvToolkit = new verovio.toolkit();
   }
 
@@ -75,12 +81,9 @@ export class VerovioService {
     elementList.forEach((element) => fillSingleNoteActiveById(element.id));
   }
 
-  initSvgOnLoad(svg, ngThis, elementList) {
+  initSvgOnLoad(elementList) {
     this.armClickableNotes(elementList);
-    this.noteCoordinates = [];
-    $('.note').each(function (i) {
-      this.noteCoordinates.push({id: $(this).attr('id'), offset: $(this).offset()});
-    });
+    this.coordinatesService.computeCoordinates();
   }
 
   setRenderingOptions(scale: number = 60) {
@@ -114,4 +117,37 @@ export class VerovioService {
   renderPage(page) {
     return this.vrvToolkit.renderPage(page);
   }
+
+  isClickedNoteInNoteElementList(elementList, event) {
+    return elementList.reduce((state, element) => element.id === event.currentTarget.id ? true : state, false)
+  }
+
+  filterClickedNoteFromNoteElementList(elementList, event) {
+    return elementList.filter((d) => d.id !== event.currentTarget.id);
+  }
+
+  addClickedNoteToNoteElementList(elementList, event) {
+
+    const note = this.getNote(event.currentTarget.id);
+    const nextelList = [...elementList];
+    nextelList.push(note);
+    console.log(note,nextelList, elementList)
+    return nextelList;
+  }
+
+  noteClick(event, $this, elementList) {
+    let nextElements;
+    if (this.isClickedNoteInNoteElementList(elementList, event)) {
+      nextElements = this.filterClickedNoteFromNoteElementList(elementList, event);
+      fillSingleNoteStandardByThis($this);
+    } else {
+      nextElements = this.addClickedNoteToNoteElementList(elementList, event);
+      fillSingleNoteActiveByThis($this);
+    }
+    console.log("VerovioService, noteClick: %o", nextElements);
+    this.poolService.addNoteSelectionToPool(true, nextElements);
+    this.storage.set('notes-selected-elements', nextElements);
+    return nextElements;
+  }
+
 }
