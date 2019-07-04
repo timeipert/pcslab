@@ -3,7 +3,7 @@
   <img src="https://img.shields.io/badge/version-0.0.1-blue.svg?cacheSeconds=2592000" />
 </p>
 
-> A graphical interface for pcs theory informed analysis.
+> A graphical interface for pcs theory informed analysis. You can try it here: https://pcs-lab.web.app/
 
 ## What can I do with it?
 
