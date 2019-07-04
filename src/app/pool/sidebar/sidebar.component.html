@@ -1,0 +1,25 @@
+<nav class="sidebar-nav">
+  <ul class="nav">
+    <li class="nav-title">Pools</li>
+
+    <li class="nav-item" *ngFor="let pool of pools">
+      <a class="nav-link" (click)="changeActivePool(pool)" [class.nav-link-primary]="activePool.id === pool.id">
+        <fa-icon icon="swimming-pool" class="mr-2"></fa-icon>
+        {{pool.name}}
+      </a>
+    </li>
+
+    <li class="nav-item">
+      <form class="form-inline">
+        <div class="input-group input-group-sm mx-3 my-2">
+
+          <input type="text" class="form-control" id="inlineFormInputGroupUsername2" placeholder="New pool..."
+                 [(ngModel)]="virtualPool" name="virtualPool">
+          <div class="input-group-append">
+            <button class="btn btn-outline-secondary" type="button" (click)="addPool()"><fa-icon icon="plus"></fa-icon></button>
+          </div>
+        </div>
+      </form>
+    </li>
+  </ul>
+</nav>
