@@ -10,13 +10,17 @@
 It's all work in progress. Until now the following features are implemented:
 
 > Organize pitch class sets in pools
+
 <p>
 <img src="https://user-images.githubusercontent.com/25463972/60677524-0d71a700-9e82-11e9-8aff-038fca26b6ad.png" />
 </p>
+
 > Create pitch class sets from score (mei file upload)
+
 <p>
 <img src="https://user-images.githubusercontent.com/25463972/60677523-0d71a700-9e82-11e9-889f-205d7ac1c50a.png" />
 </p>
+
 ## Install
 
 ```sh
