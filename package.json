@@ -24,7 +24,7 @@
     "@fortawesome/fontawesome-svg-core": "^1.2.19",
     "@fortawesome/free-solid-svg-icons": "^5.9.0",
     "firebase": "^6.2.0",
-    "jquery": "^3.4.1",
+    "jquery": "^3.5.0",
     "ngx-snackbar": "^2.0.1",
     "ngx-web-worker": "^7.0.0",
     "pitchclassjs": "0.0.5",
