@@ -1,5 +1,7 @@
 Disclaimer: The software was a quickly written prototype and is not up-to-date. 
 
+IT IS CURRENTLY NOT WORKING 
+
 
 <h1 align="center">Welcome to pcslab 👋</h1>
 <p>
